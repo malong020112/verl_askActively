@@ -150,7 +150,7 @@ multi_turn:
   tool_response_truncate_side: middle
 
   # null for no interaction
-  interaction_config_path: null
+  interaction_config_path: verl/trainer/config/interaction/askActively_interaction. #ml
 
   # - When set to True, the model's default chat template is used for multi-turn rollout, which typically matches production behavior.
   # - When set to False, the token ids recorded for training are used instead; unlike the default chat template, these always include the model's full output,

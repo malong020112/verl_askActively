@@ -1,0 +1,16 @@
+interaction:
+  # 主动提问/澄清交互器配置（Ask-Actively）
+  - name: "askActively"
+    class_name: "verl.interactions.askActively_interaction.AskActivelyInteraction"
+    config:
+      # 默认奖励策略，可被单条样本的 interaction_kwargs.reward_policy 覆盖
+      reward_policy:
+        accept_reward: 1.0                 # 用户接受最终回答的奖励
+        rejection_cost: -1.0               # 用户拒绝该轮回答的惩罚
+        clarifying_question_cost: -0.3     # 额外助理轮（>1）对应的每轮惩罚
+
+  # 如需同时启用其它交互器，可在下方继续追加条目（示例：GSM8K 校验交互）
+  # - name: "gsm8k"
+  #   class_name: "verl.interactions.gsm8k_interaction.Gsm8kInteraction"
+  #   config: {}
+
