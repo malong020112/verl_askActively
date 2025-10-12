@@ -1,9 +1,9 @@
 data:
-  train_batch_size: 256
+  train_batch_size: 16
   micro_batch_size: null # will be deprecated, use micro_batch_size_per_gpu
-  micro_batch_size_per_gpu: 4  # this is also val batch size
-  train_files: ~/data/gsm8k/train.parquet
-  val_files: ~/data/gsm8k/test.parquet
+  micro_batch_size_per_gpu: 2  # this is also val batch size
+  train_files: /root/verl_askActively/data/sft_coldStart.parquet
+  val_files: /root/verl_askActively/data/sft_coldStart.parquet
   # Single-turn settings
   prompt_key: question
   response_key: answer
@@ -11,12 +11,12 @@ data:
   response_dict_keys: null
   # Multi-turn settings
   multiturn:
-    enable: false  # Set to true to use multi-turn dataset
+    enable: true  # Set to true to use multi-turn dataset
     messages_key: messages  # Key for messages list in multi-turn mode
     tools_key: tools  # Key for tools list in multi-turn mode
     enable_thinking_key: enable_thinking  # Whether to enable thinking in multi-turn mode
-  max_length: 1024
-  truncation: error
+  max_length: 3072
+  truncation: right
   balance_dp_token: False
   chat_template: null
   custom_cls:
@@ -25,8 +25,7 @@ data:
   use_shm: False
   apply_chat_template_kwargs: {}
 model:
-  partial_pretrain: ~/models/gemma-1.1-7b-it
-  use_shm: False
+  partial_pretrain: Qwen3-4B-Instruct-2507
   fsdp_config:
     model_dtype: fp32
     wrap_policy:
@@ -35,8 +34,8 @@ model:
     offload_params: False
   external_lib: null
   enable_gradient_checkpointing: True
-  trust_remote_code: False
-  lora_rank: 0  # Set to positive value to enable LoRA (e.g., 32)
+  trust_remote_code: true
+  lora_rank: 16  # Set to positive value to enable LoRA (e.g., 32)
   lora_alpha: 16  # LoRA scaling factor
   target_modules: all-linear  # Target modules for LoRA adaptation
   use_liger: False
@@ -53,13 +52,13 @@ use_remove_padding: False
 trainer:
   default_local_dir: checkpoints/${trainer.project_name}/${trainer.experiment_name}
   default_hdfs_dir: null
-  project_name: gsm8k-sft
+  project_name: askActively-sft
   experiment_name: test
-  total_epochs: 4
+  total_epochs: 3
   total_training_steps: null
   logger: [ 'console', 'wandb' ]
   seed: 1
-  save_freq: -1
+  save_freq: 100
   test_freq: -1
   nnodes: 1
   n_gpus_per_node: 8
