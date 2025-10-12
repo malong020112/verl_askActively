@@ -2,7 +2,7 @@
 _target_: verl.workers.config.RolloutConfig
 
 # actor_rollout_ref.rollout.name: hf/vllm/sglang. The default value will be removed in the future
-name: ???
+name: sglang # ml 使用sglang多轮推理
 
 # sync: LLM, async: AsyncLLM
 mode: sync
@@ -150,7 +150,7 @@ multi_turn:
   tool_response_truncate_side: middle
 
   # null for no interaction
-  interaction_config_path: verl/trainer/config/interaction/askActively_interaction. #ml
+  interaction_config_path: verl/trainer/config/interaction/askActively_interaction.yaml #ml
 
   # - When set to True, the model's default chat template is used for multi-turn rollout, which typically matches production behavior.
   # - When set to False, the token ids recorded for training are used instead; unlike the default chat template, these always include the model's full output,

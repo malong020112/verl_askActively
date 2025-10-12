@@ -150,10 +150,14 @@ if __name__ == "__main__":
                 "extra_info": {
                     "split": split,  # 数据拆分（train/test）
                     "data_index": idx,  # 数据索引
-                    "reward_policy":{
-                        "accept_reward": 1.0,
-                        "clarifying_question_cost": -0.3,
-                        "rejection_cost": -1.0
+                    "interaction_kwargs": {
+                        "name": "askActively",  # 交互方式：主动提问
+                        "ground_truth": ground_truth,  # 传递ground_truth给交互模块
+                        "reward_policy":{
+                            "accept_reward": 1.0,
+                            "clarifying_question_cost": -0.3,
+                            "rejection_cost": -1.0
+                        },
                     }
                 }
             }
