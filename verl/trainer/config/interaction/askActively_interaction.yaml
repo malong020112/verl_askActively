@@ -1,13 +1,25 @@
 interaction:
-  # 主动提问/澄清交互器配置（Ask-Actively）
-  - name: "askActively"
+  - name: "ask_actively"
     class_name: "verl.interactions.askActively_interaction.AskActivelyInteraction"
     config:
-      # 默认奖励策略，可被单条样本的 interaction_kwargs.reward_policy 覆盖
+      # 奖励策略（可按需改）
       reward_policy:
-        accept_reward: 1.0                 # 用户接受最终回答的奖励
-        rejection_cost: -1.0               # 用户拒绝该轮回答的惩罚
-        clarifying_question_cost: -0.3     # 额外助理轮（>1）对应的每轮惩罚
+        accept_reward: 1.0
+        rejection_cost: -1.0
+        clarifying_question_cost: -0.3
+
+      # 用户模拟器的上下文截断
+      max_history_turns: 6
+
+      # 外部 LLM API 配置（请填写 base_url / model；key_env 可保持默认）
+      api:
+        base_url: ""        # 例如: https://api.openai.com/v1/chat/completions
+        model: ""           # 例如: gpt-4o-mini
+        key_env: "USER_LLM_API_KEY"
+        timeout: 30.0
+        extra_headers: {}
+        extra_body: {}
+        system_prompt: ""   # 可留空或自定义系统指令
 
   # 如需同时启用其它交互器，可在下方继续追加条目（示例：GSM8K 校验交互）
   # - name: "gsm8k"
