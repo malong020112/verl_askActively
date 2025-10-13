@@ -127,7 +127,7 @@ if __name__ == "__main__":
             # 注意：需保留所有对话轮次，让模型学习“基于历史判断是否澄清”
             task = example["messages"][0]["content"].strip()  # 初始任务（第一条message的content）
             # 2. 提取ground_truth（用户满意度+最优轮次）
-            ground_truth = extract_solution(example)
+            # ground_truth = extract_solution(example)
             
             # 3. 生成verl标准化字段
             return {
