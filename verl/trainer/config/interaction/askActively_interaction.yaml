@@ -13,14 +13,12 @@ interaction:
 
       # 外部 LLM API 配置（请填写 base_url / model；key_env 可保持默认）
       api:
-        base_url: ""        # 例如: https://api.openai.com/v1/chat/completions
+        base_url: "https://zjuapi.com/v1"        # 例如: https://api.openai.com/v1/chat/completions
         model: ""           # 例如: gpt-4o-mini
         key_env: "sk-9NHRzu99nW5jhDMNqFrkAQf85qhF5l0nzqesnEYaBkkS3r6S" #USER_LLM_API_KEY"
         timeout: 60.0
         extra_headers: {}
         extra_body: {}
-        system_prompt: ""   # 可留空或自定义系统指令
-
   # 如需同时启用其它交互器，可在下方继续追加条目（示例：GSM8K 校验交互）
   # - name: "gsm8k"
   #   class_name: "verl.interactions.gsm8k_interaction.Gsm8kInteraction"
