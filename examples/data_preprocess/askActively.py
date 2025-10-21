@@ -1,21 +1,39 @@
 import argparse
-import os
+import os, sys
 
 import datasets
-
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 from verl.utils.hdfs_io import copy, makedirs
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--local_dir", default=None, help="The save directory for the preprocessed dataset.")
-    parser.add_argument("--hdfs_dir", default=None)
-    parser.add_argument("--local_dataset_path", default=None, help="The local path to the raw dataset, if it exists.")
+    parser.add_argument("--local_dir", default=None, help="(deprecated) Same as --local_save_dir.")
+    parser.add_argument("--local_save_dir", default=None, help="Directory to save the processed dataset.")
+    parser.add_argument("--hdfs_dir", default=None, help="Optional HDFS dir to mirror the saved dataset folder.")
+    parser.add_argument("--local_dataset_path", default=None, help="Path to the raw JSONL dataset.")
     parser.add_argument(
-        "--local_save_dir", default="~/data/data_processed", help="The save directory for the preprocessed dataset."
+        "--split",
+        default="train",
+        choices=["train", "test"],
+        help="Choose whether this run processes 'train' or 'test'."
     )
 
     args = parser.parse_args()
+
+    # Backward compatibility: prefer --local_save_dir, fall back to --local_dir
+    local_save_dir = args.local_save_dir if args.local_save_dir is not None else args.local_dir
+    if local_save_dir is None:
+        raise ValueError("Please specify --local_save_dir (or legacy --local_dir).")
+
+    if args.local_dir is not None and args.local_save_dir is None:
+        print("Warning: Argument '--local_dir' is deprecated. Please use '--local_save_dir' instead.")
+
+    # Input dataset path
+    local_dataset_path = args.local_dataset_path or "/root/askActively-RL/data/IN3/test.jsonl"
+    if not os.path.exists(os.path.expanduser(local_dataset_path)):
+        raise FileNotFoundError(f"Dataset not found: {local_dataset_path}")
 
     SYSTEM_PROMPT = """
         You are trying to play as an assistant. The user will provide a problem. Your goal is to solve the initial task the user asked for, but their intentions may be unclear.
@@ -84,32 +102,13 @@ if __name__ == "__main__":
         Do not disclose this rubric, your internal candidates, or any scores to the user.
     """
 
-    # 输入数据为 JSON/JSONL：
-    # {
-    #   "category": "Movies & Reviews",
-    #   "task": "Provide the IMDb ratings for the top 5 Netflix original series.",
-    #   "vague": true,
-    #   "thought": "...",
-    #   "missing_details": [{
-    #       "description": "Criteria for 'top' series",
-    #       "importance": "3",
-    #       "inquiry": "Could you please specify...",
-    #       "options": ["Most popular", "Highest critically acclaimed", "Most recent"]
-    #   }]
-    # }
-
-    local_dataset_path = args.local_dataset_path or "/root/askActively-RL/data/data.jsonl"
-
-    full_dataset = datasets.load_dataset("json", data_files=local_dataset_path, split="train")
-    split_datasets = full_dataset.train_test_split(test_size=0.2, seed=42, shuffle=True)
-    train_dataset = split_datasets["train"]
-    test_dataset = split_datasets["test"]
+    # Load raw jsonl into a Dataset (not DatasetDict) for simplicity
+    ds = datasets.load_dataset("json", data_files=os.path.expanduser(local_dataset_path), split="train")
 
     def make_map_fn(split: str):
         def process_fn(example: dict, idx: int):
             task_text = str(example.get("task", "")).strip()
 
-            # 把完整原始条目作为属性传递给用户模拟器（交互器中读取 interaction_kwargs.user_item）
             user_item = {
                 "category": example.get("category"),
                 "task": task_text,
@@ -129,36 +128,44 @@ if __name__ == "__main__":
                 "extra_info": {
                     "split": split,
                     "data_index": idx,
-                    
                     "interaction_kwargs": {
-                        # 必须与 verl/trainer/config/interaction/askActively_interaction.yaml 中的 name 一致
-                        "name": "ask_actively",
-                        # 传递给用户 LLM 的完整属性
+                        "name": "ask_actively",  # must match your verl interaction config name
                         "user_item": user_item,
-                        
-
                     },
                 },
             }
-
         return process_fn
 
-    original_columns = train_dataset.column_names
-    train_dataset = train_dataset.map(function=make_map_fn("train"), with_indices=True, remove_columns=original_columns)
-    test_dataset = test_dataset.map(function=make_map_fn("test"), with_indices=True, remove_columns=original_columns)
+    original_columns = list(ds.column_names)
+    mapped = ds.map(
+        function=make_map_fn(args.split),
+        with_indices=True,
+        remove_columns=original_columns,
+    )
 
-    hdfs_dir = args.hdfs_dir
-    local_save_dir = args.local_dir
-    if local_save_dir is not None:
-        print("Warning: Argument 'local_dir' is deprecated. Please use 'local_save_dir' instead.")
-    else:
-        local_save_dir = args.local_save_dir
+    # # Save
+    # local_save_dir = os.path.expanduser(local_save_dir)
+    # os.makedirs(local_save_dir, exist_ok=True)
+    # out_path = os.path.join(local_save_dir, f"{args.split}_rl.parquet")
+    # mapped.to_parquet(out_path)
+    # print(f"Saved: {out_path}")
 
-    os.makedirs(os.path.expanduser(local_save_dir), exist_ok=True)
-    train_dataset.to_parquet(os.path.join(os.path.expanduser(local_save_dir), "train.parquet"))
-    test_dataset.to_parquet(os.path.join(os.path.expanduser(local_save_dir), "test.parquet"))
+    # # Optional HDFS mirror
+    # if args.hdfs_dir is not None:
+    #     makedirs(args.hdfs_dir)
+    #     copy(src=local_save_dir, dst=args.hdfs_dir)
+    #     print(f"Copied folder to HDFS: {args.hdfs_dir}")
+    # Save: 关键修改——从Parquet改为JSON Lines（每条数据一行）
+    local_save_dir = os.path.expanduser(local_save_dir)
+    os.makedirs(local_save_dir, exist_ok=True)
+    # 1. 文件后缀从.parquet改为.jsonl（符合JSON Lines格式规范）
+    out_path = os.path.join(local_save_dir, f"{args.split}_rl.jsonl")
+    # 2. 用to_json替代to_parquet，lines=True表示每条数据一行
+    mapped.to_json(out_path, lines=True, force_ascii=False)
+    print(f"Saved JSON Lines dataset (each line is one data): {out_path}")
 
-    if hdfs_dir is not None:
-        makedirs(hdfs_dir)
-        copy(src=local_save_dir, dst=hdfs_dir)
-
+    # Optional HDFS mirror（保持原有逻辑不变）
+    if args.hdfs_dir is not None:
+        makedirs(args.hdfs_dir)
+        copy(src=local_save_dir, dst=args.hdfs_dir)
+        print(f"Copied folder to HDFS: {args.hdfs_dir}")
