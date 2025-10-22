@@ -29,7 +29,7 @@ class AskActivelyInteraction(BaseInteraction):
         api_cfg = (config or {}).get("api", {})
         self._api_base_url: str = api_cfg.get("base_url", "")
         self._api_model: str = api_cfg.get("model", "")
-        self._api_key_env: str = api_cfg.get("key_env", "USER_LLM_API_KEY")
+        self._api_key: str = api_cfg.get("api_key", "USER_LLM_API_KEY")
 
 
     async def start_interaction(self, instance_id: Optional[str] = None, **kwargs) -> str:
@@ -54,7 +54,7 @@ class AskActivelyInteraction(BaseInteraction):
     ) -> Tuple[bool, str, float, Dict[str, Any]]:
         
         user = OpenAI(
-            api_key=self._api_key_env,
+            api_key=self._api_key,
             base_url=self._api_base_url,
         )
         SYS_PROMPT_USER1 = """
@@ -77,7 +77,7 @@ class AskActivelyInteraction(BaseInteraction):
         5. You should only respond to the assistant’s clarifying questions or its final answers — do not start new topics.
         6. Remember: your role is to represent the **user’s intent** faithfully and consistently throughout the conversation.
         """
-        SYS_PROMPT_USER = SYS_PROMPT_USER1 + f"\n{kwargs.get("user_item", "")}\n" + SYS_PROMPT_USER2
+        SYS_PROMPT_USER = SYS_PROMPT_USER1 + f"\n{kwargs.get('user_item', '')}\n" + SYS_PROMPT_USER2
 
         response_text = ""
 
@@ -115,7 +115,7 @@ class AskActivelyInteraction(BaseInteraction):
         elif response_text.strip().upper() == "REJECT":
             reward = -1.0
             
-        # reward += -0.3
+        reward += -0.3
         self._instance[instance_id]["reward"] = reward  
         return should_terminate, response_text, float(reward), {}
 

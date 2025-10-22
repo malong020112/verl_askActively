@@ -61,7 +61,7 @@ custom_reward_function:
 
   # The path to the file containing your customized reward function.
   # If not specified, pre-implemented reward functions will be used.
-  path: verl\utils\reward_score\askActively_getScore.py
+  path: null
 
   # The name of the reward function within the specified file. Default is 'compute_score'.
   name: compute_score
