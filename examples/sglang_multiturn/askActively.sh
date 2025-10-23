@@ -47,12 +47,12 @@ HYDRA_FULL_ERROR=1 python3 -m verl.trainer.main_ppo \
     trainer.logger='["console","wandb"]' \
     trainer.project_name='askActively' \
     trainer.experiment_name='askActively-RL' \
-    trainer.n_gpus_per_node=1 \
+    trainer.n_gpus_per_node=2 \
     trainer.nnodes=1 \
     trainer.save_freq=-1 \
     trainer.test_freq=20 \
-    data.train_files=/root/verl_askActively/data/train_rl.parquet \
-    data.val_files=/root/verl_askActively/data/test_rl.parquet \
+    data.train_files=/root/verl_askActively/verl/data/train_rl.parquet \
+    data.val_files=/root/verl_askActively/verl/data/test_rl.parquet \
     actor_rollout_ref.rollout.multi_turn.interaction_config_path="/root/verl_askActively/verl/trainer/config/interaction/askActively_interaction.yaml" \
     trainer.total_epochs=15 $@
 

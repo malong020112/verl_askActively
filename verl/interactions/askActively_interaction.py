@@ -115,7 +115,7 @@ class AskActivelyInteraction(BaseInteraction):
         elif response_text.strip().upper() == "REJECT":
             reward = -1.0
             
-        reward += -0.3
+        # reward += -0.3
         self._instance[instance_id]["reward"] = reward  
         return should_terminate, response_text, float(reward), {}
 
