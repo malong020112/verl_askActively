@@ -81,6 +81,14 @@ class AskActivelyInteraction(BaseInteraction):
 
         response_text = ""
 
+        print("当前对话内容：")
+        for msg in messages:
+            # 只筛选 role 为 user 或 assistant 的条目（注意修正拼写：assisatant → assistant）
+            if msg.get("role") in ["user", "assistant"]:
+                # 打印角色和对应的内容，用冒号分隔，增强可读性
+                print(f"【{msg['role']}】: {msg['content']}")
+        # 打印结束后空一行，与后续日志区分
+        print()
         max_retries = 5
         retries = 0
         delay = 1  # 初始延迟时间（秒）

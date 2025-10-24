@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import torch
+torch.cuda.memory._set_allocator_settings("expandable_segments:False")
+
+
 import inspect
 import logging
 import socket
@@ -368,6 +372,9 @@ class RayWorkerGroup(WorkerGroup):
             bin_pack: Whether to use strict bin packing for resource allocation
             detached: Whether workers should be detached
         """
+        from verl.utils.device import set_expandable_segments
+        set_expandable_segments(enable=False)
+
         use_gpu = resource_pool.use_gpu
 
         strategy = "PACK"

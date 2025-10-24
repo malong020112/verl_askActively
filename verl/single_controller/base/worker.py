@@ -152,6 +152,9 @@ class Worker(WorkerHelper):
 
         self._setup_env_cuda_visible_devices()
 
+        from verl.utils.device import set_expandable_segments #ml
+        set_expandable_segments(enable=False)
+
         world_size = int(os.environ["WORLD_SIZE"])
         rank = int(os.environ["RANK"])
         self._rank = rank

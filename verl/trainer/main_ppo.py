@@ -16,11 +16,14 @@ Note that we don't combine the main with ray_trainer as ray_trainer is used by o
 """
 
 import os
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:False")
 import socket
-
 import hydra
 import ray
 from omegaconf import OmegaConf
+
+import torch 
+torch.cuda.memory._set_allocator_settings('expandable_segments:False')
 
 from verl.experimental.dataset.sampler import AbstractSampler
 from verl.trainer.constants_ppo import get_ppo_ray_runtime_env
@@ -367,7 +370,7 @@ def create_rl_sampler(data_config, dataset):
     Returns:
         sampler (Sampler): The sampler.
     """
-    import torch
+    # import torch
     from torch.utils.data import RandomSampler, SequentialSampler
 
     if data_config.sampler is not None and data_config.sampler.get("class_path", None) is not None:

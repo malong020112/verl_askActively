@@ -1,17 +1,17 @@
 # run on 8xH100
 # make sure your current working directory is the root of the project
-
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
 set -x
 
 ulimit -n 65535
 
 PROJECT_DIR="$(pwd)"
 CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
-TRAIN_BATCH_SIZE=16
+TRAIN_BATCH_SIZE=8
 MICRO_BATCH_SIZE=2
 OFFLOAD=${OFFLOAD:-False}
 
-HYDRA_FULL_ERROR=1 python3 -m verl.trainer.main_ppo \
+HYDRA_FULL_ERROR=1 CUDA_VISIBLE_DEVICES=2,3 python3 -m verl.trainer.main_ppo \
     --config-path="$CONFIG_PATH" \
     --config-name='askActively' \
     algorithm.adv_estimator=grpo \
@@ -35,11 +35,10 @@ HYDRA_FULL_ERROR=1 python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.actor.fsdp_config.optimizer_offload=$OFFLOAD \
     actor_rollout_ref.actor.fsdp_config.model_dtype=bfloat16 \
     actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=$MICRO_BATCH_SIZE \
-    actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
-    actor_rollout_ref.rollout.name=vllm \
+    actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
+    actor_rollout_ref.rollout.name=sglang \
     actor_rollout_ref.rollout.gpu_memory_utilization=0.7 \
     actor_rollout_ref.rollout.n=8 \
-    actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
     actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=$MICRO_BATCH_SIZE \
     actor_rollout_ref.ref.fsdp_config.param_offload=$OFFLOAD \
     algorithm.use_kl_in_reward=False \

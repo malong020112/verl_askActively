@@ -145,7 +145,7 @@ trainer:
   log_val_generations: 0
 
   # Directory for logging rollout data; no dump if null
-  rollout_data_dir: null
+  rollout_data_dir: /root/verl_askActively/verl/rollout_data
 
   # Directory for logging validation data; no dump if null
   validation_data_dir: null
@@ -312,5 +312,8 @@ ray_kwargs:
     # Number of CPUs for Ray. Use a fixed number instead of null when using SLURM.
     num_cpus: null
 
+    runtime_env:
+      env_vars:
+        PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:False"
   # Path to save Ray timeline JSON for performance profiling
   timeline_json_file: null

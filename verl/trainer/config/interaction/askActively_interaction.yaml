@@ -1,5 +1,5 @@
 interaction:
-  - name: "ask_actively"
+  - name: "askActively"
     class_name: "verl.interactions.askActively_interaction.AskActivelyInteraction"
     config:
       # 奖励策略（可按需改）
