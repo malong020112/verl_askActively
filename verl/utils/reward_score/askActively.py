@@ -6,9 +6,13 @@ def compute_score(data_source, solution_str, ground_truth, extra_info=None):
 
     # 统计“助手轮数”= messages 里 role == "assistant" 的条数
     messages = extra_info.get("messages") or []
-    assistant_turns = sum(1 for m in messages if isinstance(m, dict) and m.get("role") == "assistant")
-    if assistant_turns <= 0:
-        assistant_turns = 1  # 单轮兜底
+    raw = extra_info.get("messages")
+    if isinstance(raw, list) and raw and isinstance(raw[0], dict) and "messages" in raw[0]: seq = raw[0]["messages"]
+    elif isinstance(raw, dict) and "messages" in raw: seq = raw["messages"]
+    else: seq = raw or []
+    def get_role(m): return getattr(m, "role", None) if not isinstance(m, dict) else m.get("role")
+    assistant_turns = sum(1 for m in seq if get_role(m) == "assistant")
+    if assistant_turns <= 0: assistant_turns = 1
 
     # 每多一轮助手回复惩罚 -0.3
     extra_turns = max(assistant_turns - 1, 0)
