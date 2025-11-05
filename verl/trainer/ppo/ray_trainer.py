@@ -1141,6 +1141,33 @@ class RayPPOTrainer:
                                     batch.non_tensor_batch["request_id"].tolist(),
                                 )
 
+                            # messages 可能含 pydantic Message，需要转为可序列化 dict
+                            def _to_serializable_msgs(item):
+                                seq = item.get("messages", item)
+                                out = []
+                                for m in seq:
+                                    if hasattr(m, "model_dump"):
+                                        out.append(m.model_dump())
+                                    elif isinstance(m, dict):
+                                        out.append({"role": m.get("role"), "content": m.get("content")})
+                                    else:
+                                        out.append({"role": getattr(m, "role", None),
+                                                    "content": getattr(m, "content", None)})
+                                return out
+
+                            if "messages" in batch.non_tensor_batch:
+                                raw_msgs = batch.non_tensor_batch["messages"].tolist()
+                                reward_extra_infos_dict.setdefault(
+                                    "messages",
+                                    [_to_serializable_msgs(x) for x in raw_msgs],
+                                )
+
+                            if "reward_scores" in batch.non_tensor_batch:
+                                reward_extra_infos_dict.setdefault(
+                                    "reward_scores",
+                                    batch.non_tensor_batch["reward_scores"].tolist(),
+                                )
+                                
                             self._dump_generations(
                                 inputs=inputs,
                                 outputs=outputs,
