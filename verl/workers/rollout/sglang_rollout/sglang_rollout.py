@@ -969,6 +969,7 @@ class SGLangRollout(BaseRollout):
                 )
                 user_turn_rewards.append(reward)
                 if should_terminate_sequence:
+                    _req.messages.append(Message(role="user", content=content)) #ml
                     finish_reason_type = FinishReasonTypeEnum.STOP
                     _req.state = AsyncRolloutRequestStateEnum.COMPLETED
                     break
