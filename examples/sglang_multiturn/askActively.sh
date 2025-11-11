@@ -1,6 +1,7 @@
 # run on 8xH100
 # make sure your current working directory is the root of the project
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
+export WANDB_API_KEY="df93f01ed2c11399040d08d4a7d1c663d560c19d"
 set -x
 
 ulimit -n 65535
@@ -11,7 +12,7 @@ TRAIN_BATCH_SIZE=8
 MICRO_BATCH_SIZE=2
 OFFLOAD=${OFFLOAD:-False}
 
-HYDRA_FULL_ERROR=1 CUDA_VISIBLE_DEVICES=2,3 python3 -m verl.trainer.main_ppo \
+HYDRA_FULL_ERROR=1 CUDA_VISIBLE_DEVICES=4,5 python3 -m verl.trainer.main_ppo \
     --config-path="$CONFIG_PATH" \
     --config-name='askActively' \
     algorithm.adv_estimator=grpo \
@@ -35,7 +36,7 @@ HYDRA_FULL_ERROR=1 CUDA_VISIBLE_DEVICES=2,3 python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.actor.fsdp_config.optimizer_offload=$OFFLOAD \
     actor_rollout_ref.actor.fsdp_config.model_dtype=bfloat16 \
     actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=$MICRO_BATCH_SIZE \
-    actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
+    actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
     actor_rollout_ref.rollout.name=sglang \
     actor_rollout_ref.rollout.gpu_memory_utilization=0.7 \
     actor_rollout_ref.rollout.n=8 \
@@ -48,10 +49,11 @@ HYDRA_FULL_ERROR=1 CUDA_VISIBLE_DEVICES=2,3 python3 -m verl.trainer.main_ppo \
     trainer.experiment_name='askActively-RL' \
     trainer.n_gpus_per_node=2 \
     trainer.nnodes=1 \
-    trainer.save_freq=-1 \
+    trainer.save_freq=50 \
     trainer.test_freq=20 \
-    data.train_files=/root/verl_askActively/verl/data/train_rl.parquet \
-    data.val_files=/root/verl_askActively/verl/data/test_rl.parquet \
+    trainer.rollout_data_dir=/root/verl_askActively/verl/rollout_data \
+    data.train_files=/root/verl_askActively/verl/data/rl/test_rl.parquet \
+    data.val_files=/root/verl_askActively/verl/data/rl/test_rl.parquet \
     actor_rollout_ref.rollout.multi_turn.interaction_config_path="/root/verl_askActively/verl/trainer/config/interaction/askActively_interaction.yaml" \
     trainer.total_epochs=15 $@
 

@@ -14,8 +14,8 @@ interaction:
       # 外部 LLM API 配置（请填写 base_url / model；key_env 可保持默认）
       api:
         base_url: "https://zjuapi.com/v1"        # 例如: https://api.openai.com/v1/chat/completions
-        model: "gemini-2.5-pro"           # 例如: gpt-4o-mini
-        api_key: "sk-9NHRzu99nW5jhDMNqFrkAQf85qhF5l0nzqesnEYaBkkS3r6S" #USER_LLM_API_KEY"
+        model: "gpt-5"           # 例如: gpt-4o-mini
+        api_key: "sk-tEbmy3HeMVHfwSfw5a2BXZMOzc76PXd4OzoMkLUj6hYowDqE" #USER_LLM_API_KEY"
         timeout: 60.0
         extra_headers: {}
         extra_body: {}
