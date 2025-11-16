@@ -1,7 +1,11 @@
 # run on 8xH100
 # make sure your current working directory is the root of the project
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
-export WANDB_API_KEY="df93f01ed2c11399040d08d4a7d1c663d560c19d"
+# Require keys to be provided via environment variables
+: "${WANDB_API_KEY:?Set WANDB_API_KEY in environment}"
+: "${USER_LLM_API_KEY:?Set USER_LLM_API_KEY in environment}"
+export WANDB_API_KEY
+export USER_LLM_API_KEY
 set -x
 
 ulimit -n 65535
